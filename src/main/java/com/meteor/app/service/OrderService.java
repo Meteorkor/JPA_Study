@@ -6,6 +6,7 @@ import com.meteor.app.entity.Member;
 import com.meteor.app.entity.Order;
 import com.meteor.app.entity.OrderItem;
 import com.meteor.app.repo.MemberRepo;
+import com.meteor.app.repo.OrderEnRepo;
 import com.meteor.app.repo.OrderItemRepo;
 import com.meteor.app.repo.OrderRepo;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +24,10 @@ public class OrderService {
     private final OrderItemRepo orderItemRepo;
     private final EntityManager entityManager;
 
+    private final OrderEnRepo orderEnRepo;
+
     @Transactional
     public Long order(Member member, OrderItem ... items){
-        //TODO 영속성 끊어져서 다시 연결한건데.. , 개선 방법 찾아서 변경해야함
         Member buyMember = memberService.findMember(member.getId());
 
         Order order = new Order();
@@ -58,16 +60,11 @@ public class OrderService {
     public Order findOrder(Long id){
         return orderRepo.findById(id).get();
     }
-    @Transactional
+//    @Transactional
+
     public Order findOrderAndItems(Long id){
-        Order order = orderRepo.findById(id).get();
-        order.getOrderItems();
-        //JPQL의 fetchJoin
+        return orderEnRepo.findOrderAndItems(id);
 
-        entityManager.detach(order);
-//        entityManager.close();
-
-        return order;
     }
 
 }

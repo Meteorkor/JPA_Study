@@ -77,15 +77,9 @@ class JpaStApplicationTests {
 
 		OrderItem[] items = orderItemList.toArray(new OrderItem[orderItemList.size()]);
 		Long orderId = orderService.order( member, items );
-
-		//Order order = orderService.findOrder(orderId);
-
 		Order order = orderService.findOrderAndItems(orderId);
 
-
-		// TODO 여기도 영속성 끊겨서 안되네..;;;, 복사해서 넘겨야 하나..
 		Assertions.assertEquals(order.getOrderItems().size(), orderItemList.size());
-
 	}
 
 

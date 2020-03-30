@@ -19,19 +19,11 @@ class JpaStApplicationTests {
 	@Autowired
 	private MemberRepo memberRepo;
 	@Autowired
-	private FindTestClass tester;
-	@Autowired
 	private MemberService memberService;
 	@Autowired
 	private ItemService itemService;
 	@Autowired
 	private OrderService orderService;
-
-
-	@Test
-	public void empSelectTest() throws Exception {
-		tester.printMemberAndOrder();
-	}
 
 
 	@Test

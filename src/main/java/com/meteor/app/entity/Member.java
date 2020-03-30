@@ -27,7 +27,7 @@ public class Member {
 
     @Embeddable
     @Getter
-    static class Address {
+    public static class Address {
         protected Address(){
 
         }

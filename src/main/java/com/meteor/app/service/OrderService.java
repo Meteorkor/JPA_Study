@@ -1,11 +1,8 @@
 package com.meteor.app.service;
 
-import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
-import com.meteor.app.entity.Item;
 import com.meteor.app.entity.Member;
 import com.meteor.app.entity.Order;
 import com.meteor.app.entity.OrderItem;
-import com.meteor.app.repo.MemberRepo;
 import com.meteor.app.repo.OrderEnRepo;
 import com.meteor.app.repo.OrderItemRepo;
 import com.meteor.app.repo.OrderRepo;
@@ -13,8 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import java.util.Iterator;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,8 +18,8 @@ public class OrderService {
     private final OrderRepo orderRepo;
     private final MemberService memberService;
     private final OrderItemRepo orderItemRepo;
-    private final EntityManager entityManager;
 
+    @Deprecated
     private final OrderEnRepo orderEnRepo;
 
     @Transactional
@@ -50,20 +46,19 @@ public class OrderService {
     @Transactional
     public void orderModifyCount(Long id, long count){
         Order order = findOrder(id);
-        Iterator<OrderItem> iter = order.getOrderItems().iterator();
-        while(iter.hasNext()){
-            OrderItem item = iter.next();
-            item.setCount(count);
-        }
+        List<OrderItem> list =  order.getOrderItems();
+        list.stream().forEach(s->s.setCount(count));
     }
 
     public Order findOrder(Long id){
         return orderRepo.findById(id).get();
+
     }
 //    @Transactional
 
     public Order findOrderAndItems(Long id){
-        return orderEnRepo.findOrderAndItems(id);
+//        return orderEnRepo.findOrderAndItems(id);
+        return orderRepo.findOrderAndItems(id);
 
     }
 

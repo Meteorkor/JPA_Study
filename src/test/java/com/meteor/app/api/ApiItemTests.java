@@ -33,7 +33,7 @@ public class ApiItemTests {
         Assertions.assertFalse("".equals(content) || content == null);
     }
 
-    @Test
+//    @Test
     public void memberRegistAndConfirm() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         String registMemberName = "pa132";

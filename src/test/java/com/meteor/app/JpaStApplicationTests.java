@@ -33,7 +33,7 @@ class JpaStApplicationTests {
     @Autowired
     private WorkRepo workRepo;
 
-    @Test
+//    @Test
 //    @Transactional
     public void bulkSaveTest() {
         StopWatch stopWatch = new StopWatch();
@@ -52,7 +52,7 @@ class JpaStApplicationTests {
 
     }
 
-    @Test
+//    @Test
     public void bulkSaveAllTest() {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -75,7 +75,7 @@ class JpaStApplicationTests {
     }
 
 
-    @Test
+//    @Test
     @DisplayName("회원등록 및 조회 테스트")
     public void memberSvcRegisTest() {
         Member member = new Member();
@@ -87,7 +87,7 @@ class JpaStApplicationTests {
         Assertions.assertEquals(member, loadMember);
     }
 
-    @Test
+//    @Test
     @DisplayName("상품등록 및 조회 테스트")
     public void itemSvcRegisTest() {
         final String ITEM_NAME = "tempBook";
@@ -101,7 +101,7 @@ class JpaStApplicationTests {
         Assertions.assertEquals(book, loadBook);
     }
 
-    @Test
+//    @Test
     @DisplayName("상품주문 및 조회 테스트")
     public void orderSvcRegisTest() {
         final String ITEM_NAME = "tempBook";
@@ -124,7 +124,7 @@ class JpaStApplicationTests {
     }
 
 
-    @Test
+//    @Test
     public void uniqueErrorTest() throws Exception {
 
 

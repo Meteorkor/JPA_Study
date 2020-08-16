@@ -62,6 +62,9 @@ public class LockTest {
                 }
             });
         }
+//        executorService.shutdown();
+        Thread.sleep(1000*5);
+        //FIXME submit은 됬지만 스케줄안된경우..
         executorService.shutdown();
         executorService.awaitTermination(100, TimeUnit.SECONDS);
         OptimisticLockEntity optimisticLockEntity = entityManagerFactory.createEntityManager().find(OptimisticLockEntity.class, id);

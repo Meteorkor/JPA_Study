@@ -3,6 +3,7 @@ package com.meteor.app;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -51,6 +52,67 @@ public class LockTest {
             entityManager.close();
         }
     }
+
+    @Test
+    void transferTest() {
+        int defaultSum = 10;
+        int transferCnt = 4;
+        long fromId = ThreadLocalRandom.current().nextInt(1,1000);
+        long toId = ThreadLocalRandom.current().nextInt(1000,2000);
+        optimisticInsert(fromId, defaultSum);
+        optimisticInsert(toId, defaultSum);
+
+        IntStream.range(0, transferCnt).forEach(n -> transfer(fromId, toId, 1));
+
+        {
+            final OptimisticLockEntity lockEntity = findId(fromId);
+            Assertions.assertEquals(defaultSum - transferCnt, lockEntity.getSum());
+        }
+        {
+            final OptimisticLockEntity lockEntity = findId(toId);
+            Assertions.assertEquals(defaultSum + transferCnt, lockEntity.getSum());
+        }
+    }
+
+    @Test
+    void transferConcurrentTest() throws InterruptedException {
+        long defaultSum = 10000;
+        int callCnt = 100;
+        long fromId = ThreadLocalRandom.current().nextInt(1,1000);
+        long toId = ThreadLocalRandom.current().nextInt(1000,2000);
+        optimisticInsert(fromId, defaultSum);
+        optimisticInsert(toId, defaultSum);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        executorService.invokeAll(
+                IntStream.range(0, callCnt).mapToObj(n -> {
+                    return new Callable<String>() {
+                        @Override
+                        public String call() throws Exception {
+                            transfer(fromId, toId, 1);
+                            transfer(toId, fromId, 1);
+                            transfer(fromId, toId, 1);
+                            return "";
+                        }
+                    };
+                }).collect(Collectors.toList())
+        );
+
+        executorService.shutdown();
+        executorService.awaitTermination(100, TimeUnit.SECONDS);
+
+        {
+            final OptimisticLockEntity lockEntity = findId(fromId);
+            Assertions.assertEquals(defaultSum - callCnt, lockEntity.getSum());
+
+        }
+        {
+            final OptimisticLockEntity lockEntity = findId(toId);
+            Assertions.assertEquals(defaultSum + callCnt, lockEntity.getSum());
+        }
+    }
+
+
 
     @Test
     void simpleOptimisticTest() {
@@ -124,8 +186,8 @@ public class LockTest {
 
         executorService.shutdown();
         executorService.awaitTermination(100, TimeUnit.SECONDS);
-        OptimisticLockEntity optimisticLockEntity = entityManagerFactory.createEntityManager().find(
-                OptimisticLockEntity.class, id);
+
+        OptimisticLockEntity optimisticLockEntity = findId(id);
         Assertions.assertEquals(expectSum, optimisticLockEntity.getSum());
     }
 
@@ -146,8 +208,7 @@ public class LockTest {
         );
         executorService.shutdown();
         executorService.awaitTermination(100, TimeUnit.SECONDS);
-        OptimisticLockEntity optimisticLockEntity = entityManagerFactory.createEntityManager().find(
-                OptimisticLockEntity.class, id);
+        OptimisticLockEntity optimisticLockEntity = findId(id);
         Assertions.assertEquals(expectSum, optimisticLockEntity.getSum());
     }
 
@@ -163,8 +224,7 @@ public class LockTest {
         }
         executorService.shutdown();
         executorService.awaitTermination(100, TimeUnit.SECONDS);
-        OptimisticLockEntity optimisticLockEntity = entityManagerFactory.createEntityManager().find(
-                OptimisticLockEntity.class, id);
+        OptimisticLockEntity optimisticLockEntity = findId(id);
         Assertions.assertEquals(expectSum, optimisticLockEntity.getSum());
     }
 
@@ -180,8 +240,7 @@ public class LockTest {
         }
         executorService.shutdown();
         executorService.awaitTermination(100, TimeUnit.SECONDS);
-        PessimisticLockEntity pessimisticLockEntity = entityManagerFactory.createEntityManager().find(
-                PessimisticLockEntity.class, id);
+        PessimisticLockEntity pessimisticLockEntity = findPessimisticLockById(id);
         Assertions.assertEquals(expectSum, pessimisticLockEntity.getSum());
     }
 
@@ -224,13 +283,17 @@ public class LockTest {
 
     //    @Transactional(propagation = Propagation.REQUIRES_NEW)
     void optimisticInsert(long id) {
+        optimisticInsert(id, 0);
+    }
+
+    void optimisticInsert(long id, long sum) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
             OptimisticLockEntity lock = new OptimisticLockEntity();
             lock.setId(id);
-            lock.setSum(0);
+            lock.setSum(sum);
             lock.setVersion(0);
             entityManager.persist(lock);
             transaction.commit();
@@ -284,8 +347,24 @@ public class LockTest {
 
     private OptimisticLockEntity findId(long id) {
         final EntityManager entityManager = entityManagerFactory.createEntityManager();
-        OptimisticLockEntity optimisticLockEntity = entityManager.find(OptimisticLockEntity.class, id);
+        OptimisticLockEntity optimisticLockEntity = null;
+        try {
+            optimisticLockEntity = entityManager.find(OptimisticLockEntity.class, id);
+        } finally {
+            entityManager.close();
+        }
         return optimisticLockEntity;
+    }
+
+    private PessimisticLockEntity findPessimisticLockById(long id) {
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        PessimisticLockEntity pessimisticLockEntity = null;
+        try {
+            pessimisticLockEntity = entityManager.find(PessimisticLockEntity.class, id);
+        } finally {
+            entityManager.close();
+        }
+        return pessimisticLockEntity;
     }
 
     void optimisticUp(long id) {
@@ -311,5 +390,32 @@ public class LockTest {
     @Test
     void pesmisticLock() {
 
+    }
+
+    void transfer(long from, long to, long value) {
+        while (true) {
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+            EntityTransaction transaction = entityManager.getTransaction();
+            try {
+                transaction.begin();
+                OptimisticLockEntity optimisticLockFromEntity = entityManager.find(OptimisticLockEntity.class,
+                                                                                   from,
+                                                                                   LockModeType.PESSIMISTIC_WRITE);
+                OptimisticLockEntity optimisticLockToEntity = entityManager.find(OptimisticLockEntity.class, to,
+                                                                                 LockModeType.PESSIMISTIC_WRITE);
+
+                if (optimisticLockFromEntity.getSum() >= value) {
+                    optimisticLockFromEntity.setSum(optimisticLockFromEntity.getSum() - value);
+                    optimisticLockToEntity.setSum(optimisticLockToEntity.getSum() + value);
+                }
+                transaction.commit();
+                break;
+            } catch (Throwable t) {
+                t.printStackTrace();
+                transaction.rollback();
+            } finally {
+                entityManager.close();
+            }
+        }
     }
 }

@@ -1,16 +1,16 @@
 package com.meteor.app.service;
 
-import com.meteor.app.entity.Item;
-import com.meteor.app.entity.Member;
-import com.meteor.app.repo.ItemRepo;
-import com.meteor.app.repo.MemberRepo;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.meteor.app.entity.Item;
+import com.meteor.app.repo.ItemRepo;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -23,26 +23,34 @@ import java.util.Optional;
 public class ItemService {
     private final ItemRepo itemRepo;
 
-    public List<Item> findItems(){
+    public List<Item> findItems() {
         List<Item> list = new ArrayList<>();
         itemRepo.findAll().forEach(list::add);
         return list;
     }
-    public Optional<Item> findItem(Long id){
+
+    public Optional<Item> findItem(Long id) {
         return itemRepo.findById(id);
     }
 
     @Transactional
-    public void regist(Item member){
+    public void regist(Item member) {
         itemRepo.save(member);
     }
 
     @Transactional
-    public void update(Long id, String name){
-        itemRepo.findById(id).ifPresent(s->{
+    public void update(Long id, String name) {
+        itemRepo.findById(id).ifPresent(s -> {
             s.setName(name);
         });
     }
 
-
+    @Transactional
+    public void quantityUp(long id, long quantity) {
+        Optional<Item> byIdForUpdate = itemRepo.findByIdForUpdate(id);
+        byIdForUpdate.ifPresent(item -> {
+            item.setStockQuantity(item.getStockQuantity() + quantity);
+            itemRepo.save(item);
+        });
+    }
 }

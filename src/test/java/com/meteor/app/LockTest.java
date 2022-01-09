@@ -1,5 +1,6 @@
 package com.meteor.app;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,6 +15,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.LockModeType;
 import javax.persistence.RollbackException;
 
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -398,11 +400,28 @@ public class LockTest {
             EntityTransaction transaction = entityManager.getTransaction();
             try {
                 transaction.begin();
-                OptimisticLockEntity optimisticLockFromEntity = entityManager.find(OptimisticLockEntity.class,
-                                                                                   from,
-                                                                                   LockModeType.PESSIMISTIC_WRITE);
-                OptimisticLockEntity optimisticLockToEntity = entityManager.find(OptimisticLockEntity.class, to,
-                                                                                 LockModeType.PESSIMISTIC_WRITE);
+
+//                OptimisticLockEntity optimisticLockFromEntity = entityManager.find(OptimisticLockEntity.class,
+//                                                                                   from,
+//                                                                                   LockModeType.PESSIMISTIC_WRITE);
+//                OptimisticLockEntity optimisticLockToEntity = entityManager.find(OptimisticLockEntity.class, to,
+//                                                                                 LockModeType.PESSIMISTIC_WRITE);
+
+                OptimisticLockEntity optimisticLockFromEntity = null;
+                OptimisticLockEntity optimisticLockToEntity = null;
+
+                List<OptimisticLockEntity> ids = entityManager.createQuery("select o from OptimisticLockEntity o where o.id in(:ids)")
+                                        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                                        .setParameter("ids", Lists.newArrayList(from, to))
+                                        .getResultList();
+
+                for (OptimisticLockEntity entity : ids) {
+                    if (from == entity.getId()) {
+                        optimisticLockFromEntity = entity;
+                    } else if (to == entity.getId()) {
+                        optimisticLockToEntity = entity;
+                    }
+                }
 
                 if (optimisticLockFromEntity.getSum() >= value) {
                     optimisticLockFromEntity.setSum(optimisticLockFromEntity.getSum() - value);

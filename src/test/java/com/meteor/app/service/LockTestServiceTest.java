@@ -30,4 +30,20 @@ public class LockTestServiceTest {
         Optional<OptimisticLockEntity> byId = lockTestService.findById(optimisticLockEntity.getId());
         Assertions.assertThat(byId.get().getSum()).isEqualTo(expectSum);
     }
+
+    @Test
+    void selectUpdateSumOrderTest() {
+        OptimisticLockEntity optimisticLockEntity = new OptimisticLockEntity();
+        optimisticLockEntity.setSum(1);
+        lockTestService.insertOptimisticLock(optimisticLockEntity);
+        lockTestService.selectUpdateSumOrderTest(optimisticLockEntity.getId());
+    }
+
+    @Test
+    void selectImmediateUpdateSumOrderTest() {
+        OptimisticLockEntity optimisticLockEntity = new OptimisticLockEntity();
+        optimisticLockEntity.setSum(1);
+        lockTestService.insertOptimisticLock(optimisticLockEntity);
+        lockTestService.selectImmediateUpdateSumOrderTest(optimisticLockEntity.getId());
+    }
 }

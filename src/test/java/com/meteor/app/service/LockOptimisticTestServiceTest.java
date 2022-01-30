@@ -12,10 +12,10 @@ import com.meteor.app.entity.lock.OptimisticLockEntity;
 //@DataJpaTest
 //@Import(LockTestService.class)
 @SpringBootTest
-public class LockTestServiceTest {
+public class LockOptimisticTestServiceTest {
 
     @Autowired
-    private LockTestService lockTestService;
+    private LockOptimisticTestService lockTestService;
 
     @Test
     void simpleQueryTest() {

@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class LockTestService {
+public class LockOptimisticTestService {
     private final OptimisticLockRepository optimisticLockRepository;
     private final ItemService itemServiceForTest;//for test
 

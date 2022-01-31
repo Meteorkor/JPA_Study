@@ -1,6 +1,7 @@
 package com.meteor.app.service;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,8 +32,7 @@ public class LockPessimisticTestService {
 
     @Transactional
     public void selectUpdateSumOrderTest(long id) {
-        selectUpdateSum(id, 30);
-        itemServiceForTest.findItem(id);
+        selectUpdateSumOrderTest(id, null);
         /**
          * query execution order
          * 1. selectUpdateSum, findById
@@ -41,15 +41,21 @@ public class LockPessimisticTestService {
          */
     }
 
-//    @Transactional
-//    public void selectImmediateUpdateSumOrderTest(long id) {
-//        selectImmediateUpdateSum(id, 30);
-//        itemServiceForTest.findItem(id);
-//        /**
-//         * query execution order
-//         * 1. selectImmediateUpdateSum, findById
-//         * 2. selectImmediateUpdateSum(saveAndFlush), update
-//         * 3. itemServiceForTest.findItem
-//         */
-//    }
+    @Transactional
+    public void selectUpdateSumOrderTest(long id, Runnable callBack) {
+        selectUpdateSum(id, 30);
+        itemServiceForTest.findItem(id);
+        Optional.ofNullable(callBack).ifPresent(Runnable::run);
+        /**
+         * query execution order
+         * 1. selectUpdateSum, findById
+         * 2. itemServiceForTest.findItem
+         * 3. selectUpdateSum, update(entity.setSum(sum))
+         */
+    }
+
+    @Transactional
+    public Object pessimisticLockFunction(Function<PessimisticLockRepository, Object> function) {
+        return function.apply(pessimisticLockRepository);
+    }
 }

@@ -1,6 +1,7 @@
 package com.meteor.app.service;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.meteor.app.entity.Item;
 import com.meteor.app.entity.lock.OptimisticLockEntity;
 import com.meteor.app.repo.OptimisticLockRepository;
+import com.meteor.app.repo.PessimisticLockRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -75,4 +77,15 @@ public class LockOptimisticTestService {
          */
     }
 
+    @Transactional
+    public void selectImmediateUpdateSumOrderTest(long id, Runnable callBack) {
+        selectImmediateUpdateSum(id, 30);
+        itemServiceForTest.findItem(id);
+        Optional.ofNullable(callBack).ifPresent(Runnable::run);
+    }
+
+    @Transactional
+    public Object optimisticLockFunction(Function<OptimisticLockRepository, Object> function) {
+        return function.apply(optimisticLockRepository);
+    }
 }

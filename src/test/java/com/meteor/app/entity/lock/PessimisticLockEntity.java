@@ -11,6 +11,7 @@ import javax.persistence.Version;
 @Data
 public class PessimisticLockEntity {
     @Id
+    @GeneratedValue
     private long id;
     private long sum;
 //    @Version

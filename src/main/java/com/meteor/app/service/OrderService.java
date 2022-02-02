@@ -44,22 +44,19 @@ public class OrderService {
     }
 
     @Transactional
-    public void orderModifyCount(Long id, long count){
+    public void orderModifyCount(Long id, long count) {
         Order order = findOrder(id);
-        List<OrderItem> list =  order.getOrderItems();
-        list.stream().forEach(s->s.setCount(count));
+        order.getOrderItems().stream().forEach((orderItem) -> {
+            orderItem.setCount(count);
+        });
     }
 
     public Order findOrder(Long id){
-        return orderRepo.findById(id).get();
+        return orderRepo.findById(id).orElseThrow();
 
     }
-//    @Transactional
 
     public Order findOrderAndItems(Long id){
-//        return orderEnRepo.findOrderAndItems(id);
         return orderRepo.findOrderAndItems(id);
-
     }
-
 }

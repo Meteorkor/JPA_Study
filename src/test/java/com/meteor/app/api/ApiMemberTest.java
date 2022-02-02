@@ -22,7 +22,7 @@ import org.springframework.util.Assert;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-public class ApiMemberTests {
+public class ApiMemberTest {
     @Autowired
     private MockMvc test;
 

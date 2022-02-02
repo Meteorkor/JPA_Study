@@ -9,24 +9,24 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
-@Service
-@RequiredArgsConstructor
 /**
  * 회원 기능
  *  회원 등록
  *  회원 조회
  */
+@Service
+@RequiredArgsConstructor
 public class MemberService {
     private final MemberRepo memberRepo;
 
-    public Iterable<Member> findMembers(){
-        List<Member> list = new ArrayList<>();
-        memberRepo.findAll().forEach(list::add);
-        return list;
+    public Iterable<Member> findMembers() {
+        return StreamSupport.stream(memberRepo.findAll().spliterator(), false).collect(Collectors.toList());
     }
     public Member findMember(Long id){
-        return memberRepo.findById(id).get();
+        return memberRepo.findById(id).orElseThrow();
     }
     @Transactional
     public void regist(Member member){

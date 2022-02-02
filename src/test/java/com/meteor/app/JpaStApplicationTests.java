@@ -110,7 +110,7 @@ class JpaStApplicationTests {
         List<OrderItem> orderItemList = itemService.findItems().stream().map(s -> {
             OrderItem orderItem = new OrderItem();
             orderItem.setCount((long) 3);
-            orderItem.setItem(s);
+            orderItem.setItem(s.toEntity());
             orderItem.setOrderPrice((long) s.getPrice());
             return orderItem;
         }).collect(Collectors.toList());

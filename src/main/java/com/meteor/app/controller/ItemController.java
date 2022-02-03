@@ -25,7 +25,7 @@ public class ItemController {
     @GetMapping("items")
     public Result<Object> items() {
         return Result.builder().data(
-                itemService.findItems().stream().map(ItemDto::fromEntity).collect(Collectors.toList())
+                itemService.findItems().stream().collect(Collectors.toList())
         ).build();
     }
 

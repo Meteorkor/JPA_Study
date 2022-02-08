@@ -12,6 +12,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.util.StopWatch;
 
 import com.meteor.app.entity.lock.PessimisticLockEntity;
@@ -28,8 +29,16 @@ public class LockPessimisticTestServiceTest {
     void selectUpdateSumOrderTest() {
         PessimisticLockEntity pessimisticLockEntity = new PessimisticLockEntity();
         pessimisticLockEntity.setSum(1);
-        lockTestService.insertPessimisticLockEntity(pessimisticLockEntity);
-        lockTestService.selectUpdateSumOrderTest(pessimisticLockEntity.getId());
+        {
+            lockTestService.insertPessimisticLockEntity(pessimisticLockEntity);
+            Optional<PessimisticLockEntity> byId = lockTestService.findById(pessimisticLockEntity.getId());
+            Assertions.assertThat(byId.orElseThrow().getSum()).isEqualTo(1);
+        }
+        {
+            lockTestService.selectUpdateSumOrderTest(pessimisticLockEntity.getId());
+            Optional<PessimisticLockEntity> byId = lockTestService.findById(pessimisticLockEntity.getId());
+            Assertions.assertThat(byId.orElseThrow().getSum()).isEqualTo(30);
+        }
     }
 
     @Test
@@ -75,7 +84,6 @@ public class LockPessimisticTestServiceTest {
                     return stopWatch.getTotalTimeMillis();
                 })
         );
-
 
         Long lateSelectForUpdateTime = (Long) submit.get();
         Assertions.assertThat(lateSelectForUpdateTime).isGreaterThan(delayTime);

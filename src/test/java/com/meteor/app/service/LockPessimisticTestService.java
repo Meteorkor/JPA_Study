@@ -5,6 +5,7 @@ import java.util.function.Function;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.meteor.app.entity.lock.PessimisticLockEntity;
 import com.meteor.app.repo.PessimisticLockRepository;
@@ -16,6 +17,10 @@ import lombok.RequiredArgsConstructor;
 public class LockPessimisticTestService {
     private final PessimisticLockRepository pessimisticLockRepository;
     private final ItemService itemServiceForTest;//for test
+
+    public Optional<PessimisticLockEntity> findById(long id) {
+        return pessimisticLockRepository.findById(id);
+    }
 
     @Transactional
     public void selectUpdateSum(long id, long sum) {

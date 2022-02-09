@@ -63,4 +63,8 @@ public class LockPessimisticTestService {
     public Object pessimisticLockFunction(Function<PessimisticLockRepository, Object> function) {
         return function.apply(pessimisticLockRepository);
     }
+
+    public Object pessimisticLockFunctionNoTran(Function<PessimisticLockRepository, Object> function) {
+        return function.apply(pessimisticLockRepository);
+    }
 }

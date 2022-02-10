@@ -14,6 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.StopWatch;
 
 import javax.transaction.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
@@ -87,9 +89,10 @@ class JpaStApplicationTests {
         Assertions.assertEquals(member, loadMember);
     }
 
-//    @Test
+    @Test
     @DisplayName("상품등록 및 조회 테스트")
     public void itemSvcRegisTest() {
+        LocalDateTime now = LocalDateTime.now();
         final String ITEM_NAME = "tempBook";
         Book book = new Book();
         book.setName(ITEM_NAME);
@@ -99,6 +102,7 @@ class JpaStApplicationTests {
         Item loadBook = itemService.findItem(book.getId()).get();
         Assertions.assertEquals(ITEM_NAME, loadBook.getName());
         Assertions.assertEquals(book, loadBook);
+        Assertions.assertTrue(loadBook.getCreatedDate().isAfter(now));
     }
 
 //    @Test
